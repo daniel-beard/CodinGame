@@ -7,6 +7,6 @@
 //
 
 struct PointCloudVertex {
-    let x: Double, y: Double, z: Double
-    let r: Double, g: Double, b: Double
+    let x: Float, y: Float, z: Float
+    let r: Float, g: Float, b: Float
 }

@@ -10,39 +10,39 @@ import SceneKit
 import QuartzCore
 
 class GameViewController: NSViewController {
-    
+
     @IBOutlet weak var gameView: GameView!
-    
+
     var scene : SCNScene!
-    
+
     override func awakeFromNib(){
         super.awakeFromNib()
-        
+
         // create a new scene
         scene = SCNScene()
-        
+
         // create and add a camera to the scene
         let cameraNode = SCNNode()
         cameraNode.camera = SCNCamera()
         scene.rootNode.addChildNode(cameraNode)
-        
+
         // place the camera
         cameraNode.position = SCNVector3(x: 0, y: 0, z: 60)
-        
+
         // create and add a light to the scene
         let lightNode = SCNNode()
         lightNode.light = SCNLight()
         lightNode.light!.type = .omni
         lightNode.position = SCNVector3(x: 0, y: 10, z: 10)
         scene.rootNode.addChildNode(lightNode)
-        
+
         // create and add an ambient light to the scene
         let ambientLightNode = SCNNode()
         ambientLightNode.light = SCNLight()
         ambientLightNode.light!.type = .ambient
         ambientLightNode.light!.color = NSColor.darkGray
         scene.rootNode.addChildNode(ambientLightNode)
-        
+
         // Draw each point
         var hue = 0.0
         var vertices : [PointCloudVertex] = []
@@ -50,12 +50,12 @@ class GameViewController: NSViewController {
         for p in points {
             let color = NSColor(calibratedHue: CGFloat(hue), saturation: 0.6, brightness: 1.0, alpha: 1.0)
             let v = PointCloudVertex(
-                x: Double(p.x),
-                y: Double(p.y),
-                z: Double(p.z),
-                r: Double(color.redComponent),
-                g: Double(color.greenComponent),
-                b: Double(color.blueComponent)
+                x: Float(p.x),
+                y: Float(p.y),
+                z: Float(p.z),
+                r: Float(color.redComponent),
+                g: Float(color.greenComponent),
+                b: Float(color.blueComponent)
             )
             vertices.append(v)
             hue += 0.0001;
@@ -63,16 +63,16 @@ class GameViewController: NSViewController {
                 hue = 0
             }
         }
-        
-        let attractorNode = buildAttractorNode(points: vertices)
+
+        let attractorNode = buildAttractorNode(vertices)
         scene.rootNode.addChildNode(attractorNode)
-        
+
         // animate the 3d object
         /*let animation = CABasicAnimation(keyPath: "rotation")
-        animation.toValue = NSValue(scnVector4: SCNVector4(x: CGFloat(0), y: CGFloat(1), z: CGFloat(0), w: CGFloat(M_PI)*2))
-        animation.duration = 30
-        animation.repeatCount = MAXFLOAT //repeat forever
-        attractorNode.addAnimation(animation, forKey: nil)*/
+         animation.toValue = NSValue(scnVector4: SCNVector4(x: CGFloat(0), y: CGFloat(1), z: CGFloat(0), w: CGFloat(M_PI)*2))
+         animation.duration = 30
+         animation.repeatCount = MAXFLOAT //repeat forever
+         attractorNode.addAnimation(animation, forKey: nil)*/
 
         // set the scene to the view
         self.gameView!.scene = scene
@@ -83,21 +83,23 @@ class GameViewController: NSViewController {
         // configure the view
         self.gameView!.backgroundColor = NSColor.black
     }
-    
+
     // Thanks SO
     // http://stackoverflow.com/questions/32712268/how-to-use-scenekit-to-display-a-colorful-point-cloud-using-custom-scngeometry
-    func buildAttractorNode(points: [PointCloudVertex]) -> SCNNode {
+    func buildAttractorNode(_ points: [PointCloudVertex]) -> SCNNode {
+
         let vertexData = NSData(
             bytes: points,
             length: MemoryLayout<PointCloudVertex>.size * points.count
         )
+
         let positionSource = SCNGeometrySource(
             data: vertexData as Data,
             semantic: SCNGeometrySource.Semantic.vertex,
             vectorCount: points.count,
             usesFloatComponents: true,
             componentsPerVector: 3,
-            bytesPerComponent: MemoryLayout<Double>.size,
+            bytesPerComponent: MemoryLayout<Float>.size,
             dataOffset: 0,
             dataStride: MemoryLayout<PointCloudVertex>.size
         )
@@ -107,8 +109,8 @@ class GameViewController: NSViewController {
             vectorCount: points.count,
             usesFloatComponents: true,
             componentsPerVector: 3,
-            bytesPerComponent: MemoryLayout<CGFloat>.size,
-            dataOffset: MemoryLayout<Double>.size * 3,
+            bytesPerComponent: MemoryLayout<Float>.size,
+            dataOffset: MemoryLayout<Float>.size * 3,
             dataStride: MemoryLayout<PointCloudVertex>.size
         )
         let elements = SCNGeometryElement(
@@ -118,7 +120,7 @@ class GameViewController: NSViewController {
             bytesPerIndex: MemoryLayout<Int>.size
         )
         let pointCloud = SCNGeometry(sources: [positionSource, colorSource], elements: [elements])
-        
+
         return SCNNode(geometry: pointCloud)
     }
 }
